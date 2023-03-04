@@ -6,7 +6,7 @@ EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["source/DataReconciliation/DataReconciliation.csproj", "Balo/"]
+COPY ["source/DataReconciliation/DataReconciliation.csproj", "DataReconciliation/"]
 RUN dotnet restore "DataReconciliation/DataReconciliation.csproj"
 COPY . .
 WORKDIR "/src/source/DataReconciliation"
