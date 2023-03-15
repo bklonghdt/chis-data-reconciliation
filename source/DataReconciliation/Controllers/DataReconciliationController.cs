@@ -68,38 +68,56 @@ namespace DataReconciliation.Controllers
                     f.CopyTo(ms);
                     l = JsonConvert.DeserializeObject<List<Laytesting>>(Encoding.UTF8.GetString(ms.ToArray()));
                 }
-                
+
                 //Tạo dữ liệu theo bộ [tên file, tên trường dữ liệu, global id, giá trị]
                 foreach (var item in l)
                 {
                     fields.ForEach(field =>
                     {
                         var value = field.GetValue(item);
-                        data.Add(new FileValue
+                        var row = new FileValue
                         {
                             FieldName = field.Name,
                             Id = item.global_id,
                             FileName = f.FileName,
                             Value = value != null ? value.ToString() : "NO_DATA",
-                        });
+                        };
+                        if (field.PropertyType == typeof(int?))
+                        {
+                            if (value != null && (int)value == 0)
+                            {
+                                row.Value = "NO_DATA";
+                            }
+                        }
+                        if(field.PropertyType == typeof(string))
+                        {
+                            if (value != null && value.ToString() == "0")
+                            {
+                                row.Value = "NO_DATA";
+                            }
+                        }
+                        data.Add(row);
                     });
                 }
             });
 
             //danh sách kết quả
             var rs = new List<Result>();
+            var succeed = new List<Result>();
 
             //nhóm dữ liệu theo từng id
             data.GroupBy(_ => _.Id).ToList().ForEach(item =>
             {
                 var id = item.Key;
-                
+
+                var fail = false;
+
                 //nhóm dữ liệu theo từng field
                 item.GroupBy(_ => _.FieldName).ToList().ForEach(field =>
                 {
                     //nhóm dữ liệu theo giá trị của field đó 
                     var d = field.GroupBy(_ => _.Value);
-                    
+
                     //trường hợp có nhiều hơn 1 giá trị (có khác biệt ở các nguồn)
                     if (d.Count() != 1)
                     {
@@ -107,6 +125,7 @@ namespace DataReconciliation.Controllers
                         d.ToList().ForEach(value =>
                         {
                             var n = string.Join(", ", value.Select(_ => _.FileName));
+                            fail = true;
                             error.Add($"{n}: {value.Key}");
                         });
                         var errorMessage = string.Join("; ", error);
@@ -114,25 +133,38 @@ namespace DataReconciliation.Controllers
                         {
                             Global_id = id,
                             Field = field.Key,
-                            Error = errorMessage
+                            Error = true,
+                            Message = errorMessage
                         });
                     }
                     //trường hợp cùng 1 global id nhưng không xuất hiện ở tất cả các file
                     if (field.Count() != fileCount)
                     {
+                        fail = true;
                         rs.Add(new Result
                         {
                             Global_id = id,
                             Field = field.Key,
-                            Error = "Number of value is not equal number of file"
+                            Error = true,
+                            Message = $"Number of value is not equal number of file (files have data: {string.Join(", ", field.Select(_ => _.FileName))})"
                         });
                     }
                 });
+                if (!fail)
+                {
+                    rs.Add(new Result
+                    {
+                        Global_id = id,
+                        Error = false,
+                        Message = "Done"
+                    });
+                }
             });
 
             using (var ms = new MemoryStream())
             {
-                new ExcelMapper().Save(ms, rs, "result");
+                var excel = new ExcelMapper();
+                excel.Save(ms, rs, "result");
                 return File(ms.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"{DateTime.Now.Ticks}.xlsx");
             }
         }
