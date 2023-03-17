@@ -209,6 +209,8 @@ namespace DataReconciliation.Models
         public int? tinh_cs_arv { get; set; }
         [Column(103)]
         public string phieu_dongy_cgxn { get; set; }
+
+        public int? status { get; set; }
     }
 
     public class FileValue
