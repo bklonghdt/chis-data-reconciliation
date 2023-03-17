@@ -72,6 +72,8 @@ namespace DataReconciliation.Controllers
                 //Tạo dữ liệu theo bộ [tên file, tên trường dữ liệu, global id, giá trị]
                 foreach (var item in l)
                 {
+                    item.status = item.status != 200 && item.status != 400 ? 200 : item.status;
+                    item.hdxh = item.hdxh == null || item.hdxh == 0 ? 2 : item.hdxh;
                     fields.ForEach(field =>
                     {
                         var value = field.GetValue(item);
