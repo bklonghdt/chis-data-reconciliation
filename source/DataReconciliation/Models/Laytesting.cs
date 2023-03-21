@@ -15,8 +15,8 @@ namespace DataReconciliation.Models
         public int? loai_dv { get; set; }
         [Column(6)]
         public string nvht_congdong { get; set; }
-        [Column(7)]
-        public string ten_nvht_congdong { get; set; }
+        //[Column(7)]
+        //public string ten_nvht_congdong { get; set; }
         [Column(8)]
         public int? tc_congdong { get; set; }
         [Column(9)]
@@ -46,7 +46,7 @@ namespace DataReconciliation.Models
         [Column(21)]
         public int? gioi_tinh { get; set; }
         [Column(22)]
-        public DateTime? ngay_sinh { get; set; }
+        public string ngay_sinh { get; set; }
         [Column(23)]
         public int? nam_sinh { get; set; }
         [Column(24)]
