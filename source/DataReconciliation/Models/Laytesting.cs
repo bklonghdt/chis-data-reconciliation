@@ -22,7 +22,7 @@ namespace DataReconciliation.Models
         [Column(9)]
         public int? xn_congdong { get; set; }
         [Column(10)]
-        public string ma_duan_conogdong { get; set; }
+        public string ma_duan_congdong { get; set; }
         [Column(11)]
         public string stt { get; set; }
         [Column(12)]
